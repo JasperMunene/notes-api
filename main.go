@@ -2,17 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/JasperMunene/notes-api/models"
-	"time"
+	"github.com/JasperMunene/notes-api/handlers"
+	"log"
+	"net/http"
 )
 
 func main() {
-	fmt.Println("Hello, World!")
-	n := models.Note{
-		ID:        1,
-		Title:     "Test",
-		Content:   "Example",
-		CreatedAt: time.Now(),
-	}
-	fmt.Println(n)
+	http.HandleFunc("/notes", handlers.NotesHandler)
+
+	fmt.Println("Server started on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
+
 }

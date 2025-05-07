@@ -1,3 +1,4 @@
+// Package handlers provides HTTP handlers for the notes API.
 package handlers
 
 import (

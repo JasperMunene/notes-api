@@ -24,11 +24,25 @@ func New(dbConn *sql.DB) *Handler {
 
 // NotesHandler dispatches to the appropriate method based on HTTP verb.
 func (h *Handler) NotesHandler(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+
 	switch r.Method {
 	case http.MethodGet:
 		h.getNotes(w, r)
 	case http.MethodPost:
 		h.createNote(w, r)
+	case http.MethodPut:
+		if id == "" {
+			h.respondError(w, http.StatusBadRequest, "missing note id")
+			return
+		}
+		h.updateNote(w, r, id)
+	case http.MethodDelete:
+		if id == "" {
+			h.respondError(w, http.StatusBadRequest, "missing note id")
+			return
+		}
+		h.deleteNote(w, r, id)
 	default:
 		h.respondError(w, http.StatusMethodNotAllowed, "method not allowed")
 	}
@@ -75,6 +89,34 @@ func (h *Handler) createNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.respondJSON(w, http.StatusCreated, n)
+}
+
+// PUT /notes
+func (h *Handler) updateNote(w http.ResponseWriter, r *http.Request, id string) {
+	var n models.Note
+	if err := json.NewDecoder(r.Body).Decode(&n); err != nil {
+		h.respondError(w, http.StatusBadRequest, "invalid JSON payload")
+		return
+	}
+
+	if err := db.UpdateNote(h.db, id, &n); err != nil {
+		log.Printf("updateNote error: %v", err)
+		h.respondError(w, http.StatusInternalServerError, fmt.Sprintf("could not update note: %v", err))
+		return
+	}
+
+	h.respondJSON(w, http.StatusOK, map[string]string{"message": "note updated"})
+}
+
+// DELETE /notes
+func (h *Handler) deleteNote(w http.ResponseWriter, r *http.Request, id string) {
+	if err := db.DeleteNote(h.db, id); err != nil {
+		log.Printf("deleteNote error: %v", err)
+		h.respondError(w, http.StatusInternalServerError, fmt.Sprintf("could not delete note: %v", err))
+		return
+	}
+
+	h.respondJSON(w, http.StatusOK, map[string]string{"message": "note deleted"})
 }
 
 // respondJSON writes a JSON response with the given status code

@@ -1,6 +1,6 @@
 # 📝 Notes API
 
-A simple RESTful API built with Go for creating and retrieving notes.  
+A simple RESTful API built with Go for creating, retrieving, updating, and deleting notes.  
 It uses PostgreSQL as the backend database and is structured with clear separation of concerns (handlers, db logic, and models).
 
 ---
@@ -9,9 +9,11 @@ It uses PostgreSQL as the backend database and is structured with clear separati
 
 - `GET /notes` - Retrieve all notes
 - `POST /notes` - Create a new note
+- `PUT /notes?id=ID` - Update an existing note by ID
+- `DELETE /notes?id=ID` - Delete a note by ID
 - JSON request and response format
 - Proper error handling
-- Environment-based configuration
+- Environment-based configuration (via `.env`)
 - Clean project structure (handlers, db, models)
 
 ---
@@ -29,6 +31,7 @@ notes-api/
 │   └── db.go
 ├── models/              # Data models (e.g., Note struct)
 │   └── note.go
+├── .env                 # Environment variables (DATABASE\_URL)
 └── go.mod / go.sum      # Go modules and dependencies
 
 ````
@@ -56,12 +59,12 @@ CREATE TABLE notes (
 );
 ```
 
-### 3. Set Environment Variables
+### 3. Configure Environment Variables
 
-Export your database connection string:
+Create a `.env` file in the project root:
 
-```bash
-export DATABASE_URL=postgres://username:password@localhost:5432/your_db
+```
+DATABASE_URL=postgres://username:password@localhost:5432/your_db
 ```
 
 ### 4. Run the Server
@@ -125,12 +128,53 @@ http://localhost:8080
 
 ---
 
+### `PUT /notes?id=1`
+
+**Description**: Update a note by ID.
+
+**Request Body**:
+
+```json
+{
+  "title": "Updated Title",
+  "content": "Updated content goes here."
+}
+```
+
+**Response**:
+
+```json
+{
+  "id": 1,
+  "title": "Updated Title",
+  "content": "Updated content goes here.",
+  "created_at": "2024-08-04T10:10:10Z"
+}
+```
+
+---
+
+### `DELETE /notes?id=1`
+
+**Description**: Delete a note by ID.
+
+**Response**:
+
+```json
+{
+  "message": "Note deleted successfully"
+}
+```
+
+---
+
 ## 📚 Tech Stack
 
 * **Language**: Go (Golang)
 * **Database**: PostgreSQL
 * **Standard Library**: `net/http`, `database/sql`, `encoding/json`
 * **Driver**: `lib/pq` for PostgreSQL
+* **Env Loader**: `joho/godotenv`
 
 ---
 
@@ -144,8 +188,10 @@ http://localhost:8080
 ---
 
 ## 🧪 Future Improvements
+
 * Authentication (JWT or session-based)
 * Pagination for `GET /notes`
+* URL path routing using `chi` or `gorilla/mux` for cleaner endpoints
 
 ---
 
@@ -159,5 +205,3 @@ MIT License
 
 **Jasper Munene**
 [devjaspermunene@gmail.com](mailto:devjaspermunene@gmail.com)
-
-```
